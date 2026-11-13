@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iris PCA + KNN Classifier</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <main class="container">
+    <header class="hero">
+      <p class="eyebrow">MACHINE LEARNING · FLASK WEB APP</p>
+      <h1>Iris Flower Classifier</h1>
+      <p class="subtitle">PCA 차원 축소와 KNN 알고리즘을 활용한 붓꽃 품종 예측</p>
+      <div class="pipeline">
+        <span>4개 측정값</span><b>→</b><span>StandardScaler</span><b>→</b><span>PCA (2D)</span><b>→</b><span>KNN</span>
+      </div>
+    </header>
+
+    <section class="panel">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">PREDICTION</p>
+          <h2>측정값 입력</h2>
+        </div>
+        <span class="tag">입력 특성 4개</span>
+      </div>
+
+      <form method="post" action="{{ url_for('index') }}">
+        <div class="input-grid">
+          {% for key, label in features %}
+          <label class="field">
+            <span>{{ label }}</span>
+            <input type="number" step="0.1" min="0.1" name="{{ key }}"
+                   value="{{ input_values[key] }}" placeholder="예: 5.1" required>
+          </label>
+          {% endfor %}
+        </div>
+        <button type="submit" class="predict-button">품종 예측하기</button>
+      </form>
+
+      {% if error %}
+      <div class="error-message">{{ error }}</div>
+      {% endif %}
+
+      {% if prediction %}
+      <section class="result-card" aria-live="polite">
+        <div class="result-copy">
+          <p class="eyebrow">PREDICTION RESULT</p>
+          <h2>{{ prediction.korean }}</h2>
+          <p class="species">{{ prediction.name }}</p>
+          <p class="result-description">입력한 측정값을 학습된 PCA + KNN Pipeline에 전달한 예측 결과입니다.</p>
+        </div>
+        <img class="flower-image"
+             src="{{ url_for('flower_image', filename=prediction.image) }}"
+             alt="{{ prediction.name }} 붓꽃 이미지">
+      </section>
+      {% endif %}
+    </section>
+
+    <section class="panel evaluation">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">MODEL EVALUATION</p>
+          <h2>테스트 데이터 평가</h2>
+        </div>
+        <span class="tag">학습 완료 모델</span>
+      </div>
+      <div class="metric-grid">
+        <div class="metric">
+          <span>Test Accuracy</span>
+          <strong>{{ "%.1f"|format(evaluation.accuracy * 100) }}%</strong>
+        </div>
+        <div class="metric">
+          <span>Train / Test</span>
+          <strong>{{ evaluation.train_samples }} / {{ evaluation.test_samples }}</strong>
+        </div>
+        <div class="metric">
+          <span>PCA Components</span>
+          <strong>{{ evaluation.pca_components }}</strong>
+        </div>
+        <div class="metric">
+          <span>누적 설명 분산</span>
+          <strong>{{ "%.1f"|format(evaluation.pca_cumulative_explained_variance * 100) }}%</strong>
+        </div>
+      </div>
+      <p class="note">평가 지표는 학습 스크립트 실행 시 분리한 Test 데이터 기준입니다. Scaler와 PCA는 Train 데이터에만 fit되었습니다.</p>
+    </section>
+
+    <footer>IRIS DATASET · STANDARD SCALER · PCA · K-NEAREST NEIGHBORS</footer>
+  </main>
+</body>
+</html>
